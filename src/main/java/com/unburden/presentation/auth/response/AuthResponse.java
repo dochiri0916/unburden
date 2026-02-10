@@ -1,0 +1,20 @@
+package com.unburden.presentation.auth.response;
+
+import com.unburden.domain.user.User;
+
+public record AuthResponse(
+        Long userId,
+        String role,
+        String accessToken
+) {
+    public static AuthResponse from(
+            final User user,
+            final String accessToken
+    ) {
+        return new AuthResponse(
+                user.getId(),
+                user.getRole().name(),
+                accessToken
+        );
+    }
+}
