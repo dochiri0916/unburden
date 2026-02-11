@@ -7,6 +7,6 @@ import java.time.LocalDateTime;
 
 public interface JournalRepository extends JpaRepository<Journal, Long> {
 
-    boolean existsByUserIdAndCreatedAtBetweenAndDeletedAtIsNull(Long userId, LocalDateTime start, LocalDateTime end);
+    boolean existsByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanAndDeletedAtIsNull(Long userId, LocalDateTime start, LocalDateTime end);
 
 }
