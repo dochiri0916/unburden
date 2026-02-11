@@ -1,20 +1,46 @@
 package com.unburden.application.letter.command;
 
+import com.unburden.application.journal.query.JournalLoader;
+import com.unburden.application.letter.dto.ComposeResult;
+import com.unburden.domain.journal.Journal;
+import com.unburden.domain.letter.Letter;
+import com.unburden.domain.letter.LetterGenerationException;
+import com.unburden.infrastructure.persistence.LetterRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.List;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ComposeLetterService {
 
+    private final JournalLoader journalLoader;
+    private final LetterRepository letterRepository;
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ComposeResult compose(String journalText) {
+    @Transactional
+    public void composeFromJournal(final Long journalId) {
+        Journal journal = journalLoader.loadById(journalId);
+
+        if (letterRepository.existsByJournalId(journalId)) {
+            return;
+        }
+
+        String content = composeContent(journal.getContent());
+
+        log.info("content={}", content);
+
+        Letter letter = Letter.create(journal.getUserId(), journal.getId(), content);
+        letterRepository.save(letter);
+        journal.markProcessed();
+    }
+
+    private String composeContent(String journalText) {
         String raw = chatClient
                 .prompt()
                 .user(buildPrompt(journalText))
@@ -22,16 +48,26 @@ public class ComposeLetterService {
                 .content();
 
         if (raw == null || raw.isBlank()) {
-            throw new IllegalStateException("AI 응답이 비어 있습니다.");
+            throw new LetterGenerationException();
         }
 
         String json = extractJson(raw);
 
         try {
-            return objectMapper.readValue(json, ComposeResult.class);
+            ComposeResult result = objectMapper.readValue(json, ComposeResult.class);
+            return merge(result);
         } catch (Exception e) {
-            throw new RuntimeException("AI JSON 파싱 실패: " + json, e);
+            throw new LetterGenerationException(e);
         }
+    }
+
+    private String merge(final ComposeResult result) {
+        return String.join(
+                "\n\n",
+                result.opening(),
+                result.body(),
+                result.closing()
+        );
     }
 
     private String buildPrompt(String text) {
@@ -71,17 +107,9 @@ public class ComposeLetterService {
         int start = raw.indexOf('{');
         int end = raw.lastIndexOf('}');
         if (start == -1 || end == -1 || start >= end) {
-            throw new RuntimeException("유효한 JSON을 찾지 못함: " + raw);
+            throw new LetterGenerationException();
         }
         return raw.substring(start, end + 1);
-    }
-
-    public record ComposeResult(
-            String opening,
-            String body,
-            String closing,
-            List<String> keywords
-    ) {
     }
 
 }

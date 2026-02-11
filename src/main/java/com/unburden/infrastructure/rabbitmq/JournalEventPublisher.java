@@ -1,4 +1,4 @@
-package com.unburden.infrastructure.messaging.rabbitmq;
+package com.unburden.infrastructure.rabbitmq;
 
 import com.unburden.application.journal.event.JournalWrittenEvent;
 import com.unburden.infrastructure.config.properties.RabbitMqProperties;
