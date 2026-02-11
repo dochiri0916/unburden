@@ -1,0 +1,13 @@
+spring:
+  data:
+    elasticsearch:
+      repositories:
+        enabled: false
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+rabbitmq:
+  exchange: journal.exchange
+  queue: journal.queue
+  routing-key: journal.key
