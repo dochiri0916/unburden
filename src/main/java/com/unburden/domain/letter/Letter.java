@@ -37,11 +37,11 @@ public class Letter extends BaseEntity {
         return letter;
     }
 
-    public void martSent() {
+    public void markSent() {
         this.status = LetterStatus.SENT;
     }
 
-    public void martRead() {
+    public void markRead() {
         this.status = LetterStatus.READ;
     }
 
