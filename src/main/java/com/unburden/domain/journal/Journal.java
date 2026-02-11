@@ -6,10 +6,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 import static java.util.Objects.requireNonNull;
 
 @Entity
-@Table(name = "journals")
+@Table(name = "journals", uniqueConstraints =
+    @UniqueConstraint(columnNames = {"user_id", "written_date"})
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Journal extends BaseEntity {
@@ -22,6 +26,8 @@ public class Journal extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String content;
+
+    private LocalDate writtenDate;
 
     @Enumerated(EnumType.STRING)
     private JournalStatus status;
