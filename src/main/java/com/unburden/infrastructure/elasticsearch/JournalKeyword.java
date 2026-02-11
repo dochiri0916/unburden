@@ -13,10 +13,10 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.time.LocalDate;
 import java.util.List;
 
-@Document(indexName = "journal_keywords")
+@Document(indexName = "journal_keywords", createIndex = false)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class JournalKeywordDocument {
+public class JournalKeyword {
 
     @Id
     private String id;
@@ -34,7 +34,7 @@ public class JournalKeywordDocument {
     private LocalDate writtenDate;
 
     @Builder
-    public JournalKeywordDocument(Long userId, Long journalId, List<String> keywords, LocalDate writtenDate) {
+    public JournalKeyword(Long userId, Long journalId, List<String> keywords, LocalDate writtenDate) {
         this.userId = userId;
         this.journalId = journalId;
         this.keywords = keywords;

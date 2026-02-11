@@ -4,8 +4,8 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 
 import java.util.List;
 
-public interface JournalKeywordRepository extends ElasticsearchRepository<JournalKeywordDocument, String> {
+public interface JournalKeywordRepository extends ElasticsearchRepository<JournalKeyword, String> {
 
-    List<JournalKeywordDocument> findByUserIdAndKeywordsIn(Long userId, List<String> keywords);
+    List<JournalKeyword> findByUserIdAndKeywordsIn(Long userId, List<String> keywords);
 
 }

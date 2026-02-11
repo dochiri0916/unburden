@@ -34,8 +34,10 @@ spring:
     username: guest
     password: guest
 
-  elasticsearch:
-    uris: http://localhost:9200
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
 
 logging:
   level:
