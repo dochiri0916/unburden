@@ -40,4 +40,8 @@ public class Journal extends BaseEntity {
         return journal;
     }
 
+    public void markProcessed() {
+        this.status = JournalStatus.PROCESSED;
+    }
+
 }
