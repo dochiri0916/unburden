@@ -3,9 +3,9 @@ package com.unburden.application.journal.command;
 import com.unburden.application.journal.event.JournalWrittenEvent;
 import com.unburden.domain.journal.DailyJournalLimitExceededException;
 import com.unburden.domain.journal.Journal;
-import com.unburden.infrastructure.messaging.rabbitmq.JournalEventPublisher;
 import com.unburden.infrastructure.persistence.JournalRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class WriteJournalService {
 
     private final JournalRepository journalRepository;
-    private final JournalEventPublisher journalEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void write(final Long userId, final String journalText) {
@@ -25,18 +25,17 @@ public class WriteJournalService {
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay();
 
-        boolean alreadyWritten = journalRepository.existsByUserIdAndCreatedAtBetweenAndDeletedAtIsNull(
+        boolean alreadyWritten = journalRepository.existsByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanAndDeletedAtIsNull(
                 userId, start, end
         );
 
         if (alreadyWritten) {
-            //TODO: 예외 메시지 예외 안에서 정의
-            throw new DailyJournalLimitExceededException("하루에 하나의 일기만 작성할 수 있습니다.");
+            throw new DailyJournalLimitExceededException();
         }
 
         Journal journal = journalRepository.save(Journal.write(userId, journalText));
 
-        journalEventPublisher.publish(
+        eventPublisher.publishEvent(
                 new JournalWrittenEvent(
                         journal.getUserId(),
                         journal.getId(),
